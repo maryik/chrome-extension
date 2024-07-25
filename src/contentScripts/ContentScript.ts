@@ -1,3 +1,5 @@
+export {};
+
 type HTMLElementWithId<T extends string> = HTMLElement & { id?: T };
 
 function addIconToNews(): void {
@@ -18,25 +20,27 @@ storyWraps.forEach((storyWrap) => {
 
   const modal: HTMLDivElement = document.createElement('div') as HTMLDivElement; //создание модального окна с погодой
   modal.id = 'myModal';
-  chrome.storage.sync.get(['selectedCity'], function(result) { //использование chrom extension api для хранения данных
-    let selectedCity
-    if(result.selectedCity === "Минск"){
-        selectedCity = "Погода " + result.selectedCity + " 30 градусов тепла";
-    }
-    else if(result.selectedCity === "Брест"){
-        selectedCity = "Погода " + result.selectedCity + " 25 градусов тепла, кратковременные дожди";
-    }
-    else{
-        selectedCity = "Погода " + result.selectedCity + " 18 градусов облачно"
-    }
-    // вставка информации о погоде по выбранному городу в modal
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close" style="float: right; cursor: pointer";>&times;</span>
-            <br>
-            <p>${selectedCity}</p>
-        </div>`;
+  chrome.storage.sync.get(['selectedCity'], function(result) {
+    let cityName = result.selectedCity; //получение названия города
+    const apiKey = '60d830e457c209d456431b29c7526ecc'; 
+
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+            let temperature = Math.round(data.main.temp - 273.15); //преобразование в градусы цельсия
+            let description = data.weather[0].description; //краткое описание погоды
+
+            let selectedCity = `Погода ${cityName} ${temperature}°C, ${description}`;
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close" style="float: right; cursor: pointer;">&times;</span>
+                    <br>
+                    <p>${selectedCity}</p>
+                </div>`;
+        })
+        .catch(error => console.error('Error fetching weather:', error));
 });
+
 
   modal.style.display = 'none'; //свойства модального окна
   modal.style.position = 'fixed';

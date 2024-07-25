@@ -1,3 +1,5 @@
+"use strict";
+
 function addIconToNews() {
     var iconTemplate = document.createElement('img'); //содание иконки
     iconTemplate.src = chrome.runtime.getURL("src/contentScripts/weather.png"); //использование chrom extension api для создания полного url
@@ -14,18 +16,19 @@ function addIconToNews() {
     var modal = document.createElement('div'); //создание модального окна с погодой
     modal.id = 'myModal';
     chrome.storage.sync.get(['selectedCity'], function (result) {
-        var selectedCity;
-        if (result.selectedCity === "Минск") {
-            selectedCity = "Погода " + result.selectedCity + " 30 градусов тепла";
-        }
-        else if (result.selectedCity === "Брест") {
-            selectedCity = "Погода " + result.selectedCity + " 25 градусов тепла, кратковременные дожди";
-        }
-        else {
-            selectedCity = "Погода " + result.selectedCity + " 18 градусов облачно";
-        }
-        // вставка информации о погоде по выбранному городу в modal
-        modal.innerHTML = "\n        <div class=\"modal-content\">\n            <span class=\"close\" style=\"float: right; cursor: pointer\";>&times;</span>\n            <br>\n            <p>".concat(selectedCity, "</p>\n        </div>");
+        var cityName = result.selectedCity; // Получаем название города из хранилища
+        var apiKey = '60d830e457c209d456431b29c7526ecc'; // Замените на ваш API ключ
+        fetch("https://api.openweathermap.org/data/2.5/weather?q=".concat(cityName, "&appid=").concat(apiKey))
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+            // Обработка данных погоды
+            var temperature = Math.round(data.main.temp - 273.15); // Преобразуем температуру из Kelvin в Celsius
+            var description = data.weather[0].description; // Описание погоды
+            var selectedCity = "\u041F\u043E\u0433\u043E\u0434\u0430 ".concat(cityName, " ").concat(temperature, "\u00B0C, ").concat(description);
+            // Вставка информации о погоде по выбранному городу в modal
+            modal.innerHTML = "\n                <div class=\"modal-content\">\n                    <span class=\"close\" style=\"float: right; cursor: pointer;\">&times;</span>\n                    <br>\n                    <p>".concat(selectedCity, "</p>\n                </div>");
+        })
+            .catch(function (error) { return console.error('Error fetching weather:', error); });
     });
     modal.style.display = 'none'; //свойства модального окна
     modal.style.position = 'fixed';

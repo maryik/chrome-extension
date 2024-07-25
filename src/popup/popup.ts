@@ -1,3 +1,5 @@
+export {};
+
 document.addEventListener('DOMContentLoaded', () => {
     const buttonElement = document.querySelector('.weather-city-button');
   
