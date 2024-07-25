@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "Weather Forecast",
+    "version": "1.0",
+    "permissions": ["storage"],
+
+    "icons": {
+        "128": "icon.png"
+    },
+
+    "content_scripts": [
+        {
+            "matches": ["https://www.npr.org/*"],
+            "js": ["src/contentScripts/ContentScript.js"]
+        }
+    ],
+
+    "background": {
+        "service_worker": "src/background/Background.js"
+    },
+
+    "action": {
+        "default_title": "Click to get weather forecast",
+        "default_icon": "icon.png",
+        "default_popup": "src/popup/popup.html"
+    },
+
+    "web_accessible_resources": [{
+        "matches": ["https://www.npr.org/*"],
+        "resources": ["src/contentScripts/weather.png"]
+    }]
+}
